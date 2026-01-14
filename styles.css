@@ -721,7 +721,7 @@ body.play-mode select {
 .timeline-skills {
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: var(--accent);
   opacity: 0;
   max-height: 0;
   overflow: hidden;
