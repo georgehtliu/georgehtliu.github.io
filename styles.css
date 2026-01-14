@@ -113,15 +113,21 @@ body {
   overflow: hidden;
 }
 
-.star {
+.star,
+.planet {
   position: absolute;
   transform: translate(-50%, -50%);
   transition: opacity 0.3s ease;
   animation: drift-left 120s linear infinite;
 }
 
-.star svg {
+.star svg,
+.planet svg {
   display: block;
+}
+
+.planet {
+  animation-duration: 180s; /* Planets move slower than stars */
 }
 
 @keyframes drift-left {
@@ -232,7 +238,8 @@ body {
   z-index: 1;
 }
 
-.feed-timer-fill {
+.feed-timer-fill,
+.play-timer-fill {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -243,6 +250,11 @@ body {
   opacity: 0.3;
   z-index: 0;
   border-radius: var(--radius-lg);
+}
+
+.play-btn-text {
+  position: relative;
+  z-index: 1;
 }
 
 .dog-action-btn:hover,
@@ -414,6 +426,13 @@ body {
   transition: opacity 0.3s ease;
 }
 
+.leash-svg[style*="display: none"],
+.leash-svg[style*="display:none"] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
 /* Hide all dog-related elements on smaller screens */
 @media (max-width: 1200px) {
   .dog-img,
@@ -447,6 +466,22 @@ body.feed-mode select {
   cursor: url('dog-treats.png') 120 120, pointer !important;
 }
 
+/* Play mode cursor */
+body.play-mode,
+body.play-mode *,
+body.play-mode *::before,
+body.play-mode *::after {
+  cursor: url('bone.png') 80 80, pointer !important;
+}
+
+body.play-mode a,
+body.play-mode button,
+body.play-mode input,
+body.play-mode textarea,
+body.play-mode select {
+  cursor: url('bone.png') 80 80, pointer !important;
+}
+
 /* Visual cursor fallback (if image cursor doesn't work) */
 .feed-cursor {
   position: fixed;
@@ -461,6 +496,77 @@ body.feed-mode select {
   transform: translate(-50%, -50%);
   image-rendering: crisp-edges;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.play-cursor {
+  position: fixed;
+  width: 160px;
+  height: 160px;
+  background-image: url('bone.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Bone element */
+.bone-element {
+  position: fixed;
+  width: 60px;
+  height: 60px;
+  background-image: url('bone.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  animation: boneDrop 0.3s ease-out;
+}
+
+@keyframes boneDrop {
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2) rotate(180deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(360deg);
+    opacity: 1;
+  }
+}
+
+@keyframes boneCollect {
+  0% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5) rotate(180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Bone collection particles */
+.bone-particle {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  background: #FFD700;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10001;
+  box-shadow: 0 0 4px rgba(255, 215, 0, 0.8);
 }
 
 
