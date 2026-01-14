@@ -108,8 +108,8 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('topographic-pattern.svg');
-  background-size: 400px 400px;
+  background-image: url('background-pattern.svg');
+  background-size: 200px 200px;
   background-position: 0 0;
   background-repeat: repeat;
   opacity: 1;
@@ -118,7 +118,7 @@ body::before {
 }
 
 [data-theme="light"] body::before {
-  background-image: url('topographic-pattern-light.svg');
+  background-image: url('background-pattern-light.svg');
   opacity: 1;
 }
 
@@ -183,28 +183,13 @@ body > * {
 /* Hero Section */
 .hero {
   position: relative;
-  min-height: 60vh;
+  min-height: auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: calc(var(--container-padding) + 3rem) 0 var(--section-gap);
-  margin-bottom: var(--section-gap);
-}
-
-.hero-logo {
-  position: absolute;
-  top: calc(var(--container-padding) + 3rem);
-  left: var(--container-padding);
-  z-index: 10;
-}
-
-.logo-text {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 600;
-  color: var(--accent);
-  display: block;
+  padding: calc(var(--container-padding) + 3rem) 0 0;
+  margin-bottom: clamp(1rem, 2vw, 2rem);
 }
 
 /* Hero Name */
@@ -244,37 +229,6 @@ body > * {
 @keyframes blink {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
-}
-
-/* Mascot */
-.mascot {
-  position: absolute;
-  right: var(--container-padding);
-  top: 50%;
-  transform: translateY(-50%);
-  width: 60px;
-  height: 60px;
-  color: var(--accent);
-  opacity: 0.6;
-  pointer-events: none;
-  animation: float 4s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mascot {
-    animation: none;
-  }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(-50%) translateY(0); }
-  50% { transform: translateY(-50%) translateY(-8px); }
-}
-
-@media (max-width: 1024px) {
-  .mascot {
-    display: none;
-  }
 }
 
 /* Bio Section */
@@ -365,17 +319,21 @@ body > * {
 .icon-circle {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  border-radius: var(--radius-md);
   background: var(--surface);
   border: 1px solid var(--outline);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
   transition: border-color 0.15s ease-out, background-color 0.15s ease-out;
+  overflow: hidden;
+}
+
+.company-logo {
+  width: 85%;
+  height: 85%;
+  object-fit: contain;
+  display: block;
 }
 
 .timeline-item:hover .icon-circle {
@@ -493,12 +451,6 @@ body > * {
 }
 
 /* Responsive Adjustments */
-@media (min-width: 640px) {
-  .photo-strip {
-    flex-wrap: nowrap;
-  }
-}
-
 @media (min-width: 1024px) {
   .timeline-item {
     padding: 1.75rem 0;
@@ -520,14 +472,5 @@ body > * {
   .hero {
     min-height: auto;
     padding-top: 2rem;
-  }
-  
-  .hero-logo {
-    position: relative;
-    top: auto;
-    left: auto;
-    margin-bottom: 2rem;
-    text-align: center;
-    width: 100%;
   }
 }
