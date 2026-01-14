@@ -9,11 +9,11 @@
   --primary-200: #6B7280;
   --primary-text: #E5E7EB;
 
-  /* Secondary Colors - Lime Mint */
-  --secondary-base: #9BE15D;
-  --secondary-700: #7FD34A;
-  --secondary-500: #A7F07E;
-  --secondary-300: #C7F7A9;
+  /* Secondary Colors - Neon Orange */
+  --secondary-base: #FF6B35;
+  --secondary-700: #E85A2B;
+  --secondary-500: #FF8C5A;
+  --secondary-300: #FFB899;
 
   /* Grays */
   --gray-900: #0B0D12;
@@ -165,7 +165,7 @@ body > * {
 .nav-link:focus {
   color: var(--accent);
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent), 0 0 8px rgba(155, 225, 93, 0.2);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 8px rgba(255, 107, 53, 0.2);
   outline: none;
 }
 
@@ -267,13 +267,13 @@ body > * {
   font-family: var(--font-mono);
   font-size: 0.875em;
   color: var(--accent);
-  background: rgba(155, 225, 93, 0.1);
+  background: rgba(255, 107, 53, 0.1);
   padding: 0.125rem 0.375rem;
   border-radius: var(--radius-sm);
 }
 
 [data-theme="light"] .highlight-tag {
-  background: rgba(127, 211, 74, 0.15);
+  background: rgba(232, 90, 43, 0.15);
 }
 
 /* Timeline Section */
@@ -338,7 +338,7 @@ body > * {
 
 .timeline-item:hover .icon-circle {
   border-color: var(--accent);
-  background: rgba(155, 225, 93, 0.05);
+  background: rgba(255, 107, 53, 0.05);
 }
 
 .timeline-content {
@@ -367,6 +367,25 @@ body > * {
   font-size: 0.875rem;
   color: var(--text-secondary);
   line-height: 1.5;
+  margin-bottom: 0.25rem;
+}
+
+.timeline-skills {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity 0.2s ease-out, max-height 0.2s ease-out, margin-top 0.2s ease-out;
+  display: block;
+  margin-top: 0;
+}
+
+.timeline-item:hover .timeline-skills {
+  opacity: 1;
+  max-height: 2rem;
+  margin-top: 0.5rem;
 }
 
 .timeline-year {
@@ -434,7 +453,7 @@ body > * {
 .theme-toggle:focus {
   color: var(--accent);
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent), 0 0 8px rgba(155, 225, 93, 0.2);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 8px rgba(255, 107, 53, 0.2);
   outline: none;
 }
 
