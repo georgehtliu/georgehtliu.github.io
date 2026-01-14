@@ -325,6 +325,14 @@
   function updateLeash() {
     if (!isLeashed) {
       leashSvg.style.opacity = '0';
+      // Reset dog scale when not leashed, but preserve orientation
+      const dogRect = dog.getBoundingClientRect();
+      const dogCenterX = dogRect.left + dogRect.width / 2;
+      if (mouseX < dogCenterX) {
+        dog.style.transform = 'scaleX(-1)';
+      } else {
+        dog.style.transform = 'scaleX(1)';
+      }
       return;
     }
     
@@ -333,6 +341,37 @@
     const dogRect = dog.getBoundingClientRect();
     const dogCenterX = dogRect.left + dogRect.width / 2;
     const dogCenterY = dogRect.top + dogRect.height / 2;
+    
+    // Calculate distance between dog and leash attachment point
+    const dx = dogCenterX - leashPoint.x;
+    const dy = dogCenterY - leashPoint.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    // Dynamic scaling: closer to attachment = smaller, farther = larger
+    // Base scale at max distance, scale down as distance decreases
+    const maxDistance = 400; // Maximum expected distance
+    const minScale = 0.5; // Minimum scale (when very close)
+    const maxScale = 1.0; // Maximum scale (when far)
+    
+    // Calculate scale based on distance (inverse relationship)
+    const normalizedDistance = Math.min(distance / maxDistance, 1);
+    const scale = minScale + (maxScale - minScale) * normalizedDistance;
+    
+    // Determine orientation based on cursor position
+    const facingLeft = mouseX < dogCenterX;
+    
+    // Apply scale and orientation together
+    if (facingLeft) {
+      dog.style.transform = `scaleX(-${scale}) scaleY(${scale})`;
+    } else {
+      dog.style.transform = `scale(${scale})`;
+    }
+    
+    // Dynamic leash thickness: thinner when stretched, thicker when slack
+    const minStrokeWidth = 1.5;
+    const maxStrokeWidth = 4;
+    const strokeWidth = minStrokeWidth + (maxStrokeWidth - minStrokeWidth) * (1 - normalizedDistance);
+    leashLine.setAttribute('stroke-width', strokeWidth);
     
     // Update leash SVG position and size
     leashSvg.style.position = 'fixed';
@@ -350,20 +389,6 @@
     leashLine.setAttribute('y2', leashPoint.y);
   }
   
-  // Make dog face the ball/cursor
-  function updateDogOrientation() {
-    const dogRect = dog.getBoundingClientRect();
-    const dogCenterX = dogRect.left + dogRect.width / 2;
-    
-    // Make dog face the ball/cursor
-    if (mouseX < dogCenterX) {
-      // Cursor is to the left - flip horizontally to face left
-      dog.style.transform = 'scaleX(-1)';
-    } else {
-      // Cursor is to the right - normal orientation (facing right)
-      dog.style.transform = 'scaleX(1)';
-    }
-  }
   
   // Check if dog is colliding with container and rebound
   function checkContainerCollision(x, y) {
@@ -590,7 +615,7 @@
   function animate() {
     updateDogPosition();
     updateLeash();
-    updateDogOrientation();
+    // updateDogOrientation is now handled within updateLeash to avoid transform conflicts
     requestAnimationFrame(animate);
   }
   

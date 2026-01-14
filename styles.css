@@ -414,9 +414,14 @@ body {
   transition: opacity 0.3s ease;
 }
 
+/* Hide all dog-related elements on smaller screens */
 @media (max-width: 1200px) {
-  .dog-img {
-    display: none;
+  .dog-img,
+  .dog-container,
+  .leash-svg,
+  .dog-actions,
+  .dog-feed-reminder {
+    display: none !important;
   }
 }
 
