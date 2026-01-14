@@ -164,6 +164,96 @@
     
     starsContainer.appendChild(planet);
   }
+  
+  // Generate spaceships
+  const spaceshipCount = 4;
+  const spaceshipColors = [
+    '#9BB5FF', // Blue
+    '#C8A8FF', // Purple
+    '#FF8C5A', // Orange
+    '#B8FFD4', // Green
+    '#FFE5B8', // Yellow
+  ];
+  
+  const spaceshipShapes = [
+    // Classic UFO
+    (size) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="12" cy="10" rx="8" ry="3" fill="currentColor"/>
+      <ellipse cx="12" cy="10" rx="6" ry="2" fill="rgba(255,255,255,0.3)"/>
+      <circle cx="9" cy="9" r="1" fill="rgba(255,255,255,0.6)"/>
+      <circle cx="12" cy="9" r="1" fill="rgba(255,255,255,0.6)"/>
+      <circle cx="15" cy="9" r="1" fill="rgba(255,255,255,0.6)"/>
+      <ellipse cx="12" cy="13" rx="4" ry="1.5" fill="currentColor" opacity="0.5"/>
+    </svg>`,
+    // Rocket ship
+    (size) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L14 8L20 10L14 12L12 18L10 12L4 10L10 8L12 2Z" fill="currentColor"/>
+      <circle cx="12" cy="10" r="2" fill="rgba(255,255,255,0.4)"/>
+      <path d="M12 18L10 22L12 20L14 22L12 18Z" fill="currentColor" opacity="0.7"/>
+    </svg>`,
+    // Flying saucer
+    (size) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="12" cy="8" rx="9" ry="4" fill="currentColor"/>
+      <ellipse cx="12" cy="8" rx="7" ry="3" fill="rgba(255,255,255,0.2)"/>
+      <ellipse cx="12" cy="12" rx="6" ry="2" fill="currentColor" opacity="0.6"/>
+      <rect x="10" y="6" width="4" height="4" rx="1" fill="rgba(255,255,255,0.5)"/>
+    </svg>`,
+    // Alien head
+    (size) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="12" cy="10" rx="7" ry="9" fill="currentColor"/>
+      <ellipse cx="9" cy="8" rx="2" ry="3" fill="rgba(0,0,0,0.8)"/>
+      <ellipse cx="15" cy="8" rx="2" ry="3" fill="rgba(0,0,0,0.8)"/>
+      <ellipse cx="12" cy="12" rx="3" ry="1.5" fill="rgba(0,0,0,0.6)"/>
+      <ellipse cx="12" cy="16" rx="4" ry="2" fill="rgba(255,255,255,0.3)"/>
+    </svg>`,
+    // Satellite
+    (size) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="8" width="4" height="8" rx="1" fill="currentColor"/>
+      <rect x="8" y="10" width="8" height="4" rx="1" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1.5" fill="rgba(255,255,255,0.6)"/>
+      <line x1="4" y1="12" x2="8" y2="12" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="16" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="12" y1="4" x2="12" y2="8" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="12" y1="16" x2="12" y2="20" stroke="currentColor" stroke-width="1.5"/>
+    </svg>`,
+    // Comet
+    (size) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="18" cy="6" r="3" fill="currentColor"/>
+      <path d="M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M15 9L9 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+    </svg>`,
+    // Asteroid
+    (size) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C8 4 6 8 7 12C6 16 8 20 12 22C16 20 18 16 17 12C18 8 16 4 12 2Z" fill="currentColor"/>
+      <circle cx="10" cy="8" r="1" fill="rgba(0,0,0,0.4)"/>
+      <circle cx="14" cy="10" r="0.8" fill="rgba(0,0,0,0.4)"/>
+      <circle cx="11" cy="14" r="1.2" fill="rgba(0,0,0,0.4)"/>
+    </svg>`,
+  ];
+  
+  for (let i = 0; i < spaceshipCount; i++) {
+    const spaceship = document.createElement('div');
+    spaceship.className = 'spaceship';
+    
+    const size = Math.random() * 25 + 20; // 20-45px
+    const x = Math.random() * 200 - 50;
+    const y = Math.random() * 100;
+    const shapeIndex = Math.floor(Math.random() * spaceshipShapes.length);
+    spaceship.innerHTML = spaceshipShapes[shapeIndex](size);
+    
+    const opacity = Math.random() * 0.3 + 0.5; // 0.5 to 0.8
+    const colorIndex = Math.floor(Math.random() * spaceshipColors.length);
+    
+    spaceship.style.left = x + '%';
+    spaceship.style.top = y + '%';
+    spaceship.style.opacity = opacity;
+    spaceship.style.color = spaceshipColors[colorIndex];
+    
+    const baseDelay = x < 50 ? Math.random() * 30 : Math.random() * 60;
+    spaceship.style.animationDelay = `-${baseDelay}s`;
+    
+    starsContainer.appendChild(spaceship);
+  }
 })();
 
 // Typewriter Effect
