@@ -11,18 +11,21 @@
   <!-- Background Stars -->
   <div class="stars-container" aria-hidden="true"></div>
   
-  <!-- Animated Ball Cursor -->
-  <div class="animated-cursor"></div>
-  
   <!-- Header -->
   <header class="header">
     <nav class="header-nav">
-      <a href="#notes" class="nav-link">notes</a>
       <a href="#blog" class="nav-link">blog</a>
       <a href="#bookmarks" class="nav-link">bookmarks</a>
       <span class="keyboard-hint" aria-label="Keyboard shortcuts">⌘K</span>
     </nav>
   </header>
+
+  <!-- Dog Action Buttons (Top Left) -->
+  <div class="dog-actions">
+    <button class="dog-action-btn" data-action="leash-toggle">leash/unleash</button>
+    <button class="dog-action-btn" data-action="feed">feed</button>
+    <button class="dog-action-btn" data-action="play">play</button>
+  </div>
 
   <!-- Content Container (invisible box) -->
   <div class="content-container">
@@ -137,8 +140,15 @@
   </section>
   </div>
 
-  <!-- Dog GIF (follows cursor) -->
-  <img src="space-dog.gif" alt="" class="dog-img" aria-hidden="true">
+  <!-- Leash SVG -->
+  <svg class="leash-svg" aria-hidden="true">
+    <line class="leash-line" stroke="currentColor" stroke-width="3" fill="none"/>
+  </svg>
+
+  <!-- Dog GIF (stationary on left) -->
+  <div class="dog-container">
+    <img src="space-dog.gif" alt="" class="dog-img" aria-hidden="true">
+  </div>
 
   <!-- Footer -->
   <footer class="footer">

@@ -41,8 +41,9 @@
     // Random size between 8px and 24px
     const size = Math.random() * 16 + 8;
     
-    // Random position
-    const x = Math.random() * 100;
+    // Random position across entire viewport (including negative x for left side)
+    // Spread stars from -50% to 150% to ensure coverage on left side
+    const x = Math.random() * 200 - 50; // Range from -50% to 150%
     const y = Math.random() * 100;
     
     // Random shape
@@ -56,6 +57,11 @@
     star.style.top = y + '%';
     star.style.opacity = opacity;
     star.style.color = 'var(--text-secondary)';
+    
+    // Add random animation delay for natural movement
+    // Stars on left side (x < 50%) get shorter delays so they're visible immediately
+    const baseDelay = x < 50 ? Math.random() * 30 : Math.random() * 60;
+    star.style.animationDelay = `-${baseDelay}s`;
     
     starsContainer.appendChild(star);
   }
@@ -198,200 +204,451 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 })();
 
-// Animated ball cursor
+// Track mouse position for dog orientation
 (function() {
-  const cursor = document.querySelector('.animated-cursor');
-  const contentContainer = document.querySelector('.content-container');
-  if (!cursor || !contentContainer) return;
-  
-  const respectsReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (respectsReducedMotion) {
-    cursor.style.display = 'none';
-    document.body.style.cursor = 'auto';
-    return;
-  }
-  
   let mouseX = 0;
   let mouseY = 0;
-  let cursorX = 0;
-  let cursorY = 0;
-  let isInsideContentBox = false;
-  let targetScrollY = 0;
-  let currentScrollY = 0;
-  
-  // Function to check if point is inside content box
-  function isPointInsideBox(x, y) {
-    const rect = contentContainer.getBoundingClientRect();
-    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-  }
   
   // Track mouse position
   document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-    
-    // Check if cursor is inside content box
-    const wasInside = isInsideContentBox;
-    isInsideContentBox = isPointInsideBox(mouseX, mouseY);
-    
-    // Update cursor visibility and body cursor style
-    if (isInsideContentBox !== wasInside) {
-      if (isInsideContentBox) {
-        cursor.style.display = 'none';
-        document.body.classList.add('cursor-inside-content');
-      } else {
-        cursor.style.display = 'block';
-        document.body.classList.remove('cursor-inside-content');
-      }
-    }
-    
-    // Calculate target scroll position based on cursor vertical position
-    if (!respectsReducedMotion) {
-      const viewportHeight = window.innerHeight;
-      const scrollableHeight = document.documentElement.scrollHeight - viewportHeight;
-      
-      if (scrollableHeight > 0) {
-        // Map cursor Y (0 to viewportHeight) to scroll position (0 to scrollableHeight)
-        targetScrollY = (mouseY / viewportHeight) * scrollableHeight;
-      }
-    }
   });
   
-  // Animate cursor following mouse
-  function animateCursor() {
-    // Only animate if cursor is visible (outside content box)
-    if (!isInsideContentBox) {
-      // Smooth interpolation
-      cursorX += (mouseX - cursorX) * 0.2;
-      cursorY += (mouseY - cursorY) * 0.2;
-      
-      cursor.style.left = cursorX + 'px';
-      cursor.style.top = cursorY + 'px';
-    }
-    
-    // Smooth scroll to match cursor vertical position
-    if (!respectsReducedMotion) {
-      currentScrollY += (targetScrollY - currentScrollY) * 0.1;
-      window.scrollTo(0, currentScrollY);
-    }
-    
-    requestAnimationFrame(animateCursor);
-  }
-  
-  // Initialize scroll position
-  currentScrollY = window.scrollY;
-  targetScrollY = window.scrollY;
-  
-  animateCursor();
-  
-  // Export isInsideContentBox for dog script
-  window.isInsideContentBox = () => isInsideContentBox;
-  window.getContentBoxBounds = () => contentContainer.getBoundingClientRect();
+  // Export mouse position for dog script
+  window.getMousePosition = () => ({ x: mouseX, y: mouseY });
 })();
 
-// Dog follows cursor (ball)
+// Dog stationary on left, attached via leash to middle of content container
 (function() {
   const dog = document.querySelector('.dog-img');
+  const dogContainer = document.querySelector('.dog-container');
+  const leashLine = document.querySelector('.leash-line');
+  const leashSvg = document.querySelector('.leash-svg');
   const contentContainer = document.querySelector('.content-container');
-  if (!dog || !contentContainer) return;
+  if (!dog || !dogContainer || !leashLine || !leashSvg || !contentContainer) return;
   
   const respectsReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (respectsReducedMotion) {
     dog.style.display = 'none';
+    leashSvg.style.display = 'none';
     return;
   }
   
   let mouseX = 0;
   let mouseY = 0;
+  const dogSize = 180; // Dog width/height
+  const dogOffset = dogSize / 2; // Half of dog size for centering
+  
+  let isLeashed = true;
   let dogX = 0;
   let dogY = 0;
+  let targetX = 0;
+  let targetY = 0;
+  let originalX = 0;
+  let originalY = 0;
+  let targetOriginalX = 0;
+  let targetOriginalY = 0;
+  let velocityX = 0;
+  let velocityY = 0;
   let prevDogX = 0;
+  let prevDogY = 0;
   
-  // Initialize dog position (top left corner)
-  dogX = 90; // Half of dog width (180px / 2)
-  dogY = 90; // Half of dog height (180px / 2)
-  prevDogX = dogX;
-  dog.style.left = (dogX - 90) + 'px';
-  dog.style.top = (dogY - 90) + 'px';
-  
-  // Track mouse position
-  document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  });
-  
-  // Function to check if point is inside content box
-  function isPointInsideBox(x, y, padding = 0) {
-    const rect = contentContainer.getBoundingClientRect();
-    return x >= (rect.left - padding) && x <= (rect.right + padding) && 
-           y >= (rect.top - padding) && y <= (rect.bottom + padding);
+  // Get mouse position from global tracker
+  function getMousePosition() {
+    const pos = window.getMousePosition();
+    mouseX = pos.x;
+    mouseY = pos.y;
   }
   
-  // Function to constrain point outside content box
-  function constrainOutsideBox(x, y) {
+  // Function to get leash attachment point (middle of left edge of content container)
+  function getLeashAttachmentPoint() {
     const rect = contentContainer.getBoundingClientRect();
-    const padding = 90; // Dog radius + some margin (dog is now 180px)
+    return {
+      x: rect.left, // Left edge of container
+      y: rect.top + (rect.bottom - rect.top) / 2  // Middle vertically
+    };
+  }
+  
+  // Calculate original dog position based on container
+  function calculateOriginalPosition() {
+    const rect = contentContainer.getBoundingClientRect();
+    const containerLeft = rect.left;
+    const screenLeft = 0;
     
-    // If dog is inside or too close to box, push it out
-    if (isPointInsideBox(x, y, padding)) {
+    // Dog position: middle of space between screen left and container left edge
+    targetOriginalX = (screenLeft + containerLeft) / 2;
+    targetOriginalY = window.innerHeight / 2; // Vertically centered
+    
+    // Update original position smoothly
+    originalX += (targetOriginalX - originalX) * 0.1;
+    originalY += (targetOriginalY - originalY) * 0.1;
+  }
+  
+  // Initialize dog position (middle of space between screen left and container left edge)
+  function initializeDog() {
+    calculateOriginalPosition();
+    
+    dogX = originalX;
+    dogY = originalY;
+    targetX = originalX;
+    targetY = originalY;
+    
+    dog.style.left = (dogX - dogOffset) + 'px';
+    dog.style.top = (dogY - dogOffset) + 'px';
+    dog.style.position = 'relative';
+    
+    // Update container position to match dog
+    dogContainer.style.left = (dogX - dogOffset) + 'px';
+    dogContainer.style.top = (dogY - dogOffset) + 'px';
+  }
+  
+  initializeDog();
+  
+  // Generate random target for roaming (outside content container)
+  function generateRandomTarget() {
+    const rect = contentContainer.getBoundingClientRect();
+    const padding = 100;
+    const dogRadius = dogOffset;
+    
+    // Generate random position, but exclude the content container area
+    let attempts = 0;
+    let validPosition = false;
+    
+    while (!validPosition && attempts < 50) {
+      // Generate random position
+      targetX = padding + Math.random() * (window.innerWidth - padding * 2);
+      targetY = padding + Math.random() * (window.innerHeight - padding * 2);
+      
+      // Check if position is outside the content container (with padding for dog size)
+      const isOutside = targetX < (rect.left - dogRadius) || 
+                       targetX > (rect.right + dogRadius) ||
+                       targetY < (rect.top - dogRadius) || 
+                       targetY > (rect.bottom + dogRadius);
+      
+      if (isOutside) {
+        validPosition = true;
+      }
+      attempts++;
+    }
+    
+    // Fallback: if we can't find a valid position, use a position to the left of container
+    if (!validPosition) {
+      targetX = rect.left - dogRadius - 50;
+      targetY = window.innerHeight / 2;
+    }
+  }
+  
+  // Toggle leash function (called from dropdown)
+  function toggleLeash() {
+    isLeashed = !isLeashed;
+    
+    if (isLeashed) {
+      // Return to original position
+      targetX = originalX;
+      targetY = originalY;
+    } else {
+      // Start roaming
+      generateRandomTarget();
+    }
+  }
+  
+  // Update leash line
+  function updateLeash() {
+    if (!isLeashed) {
+      leashSvg.style.opacity = '0';
+      return;
+    }
+    
+    leashSvg.style.opacity = '1';
+    const leashPoint = getLeashAttachmentPoint();
+    const dogRect = dog.getBoundingClientRect();
+    const dogCenterX = dogRect.left + dogRect.width / 2;
+    const dogCenterY = dogRect.top + dogRect.height / 2;
+    
+    // Update leash SVG position and size
+    leashSvg.style.position = 'fixed';
+    leashSvg.style.top = '0';
+    leashSvg.style.left = '0';
+    leashSvg.style.width = '100%';
+    leashSvg.style.height = '100%';
+    leashSvg.style.pointerEvents = 'none';
+    leashSvg.style.zIndex = '998'; // Below dog
+    
+    // Set leash line coordinates (straight line)
+    leashLine.setAttribute('x1', dogCenterX);
+    leashLine.setAttribute('y1', dogCenterY);
+    leashLine.setAttribute('x2', leashPoint.x);
+    leashLine.setAttribute('y2', leashPoint.y);
+  }
+  
+  // Make dog face the ball/cursor
+  function updateDogOrientation() {
+    const dogRect = dog.getBoundingClientRect();
+    const dogCenterX = dogRect.left + dogRect.width / 2;
+    
+    // Make dog face the ball/cursor
+    if (mouseX < dogCenterX) {
+      // Cursor is to the left - flip horizontally to face left
+      dog.style.transform = 'scaleX(-1)';
+    } else {
+      // Cursor is to the right - normal orientation (facing right)
+      dog.style.transform = 'scaleX(1)';
+    }
+  }
+  
+  // Check if dog is colliding with container and rebound
+  function checkContainerCollision(x, y) {
+    const rect = contentContainer.getBoundingClientRect();
+    const dogRadius = dogOffset;
+    
+    // Check if dog is touching or inside container
+    const isColliding = x >= (rect.left - dogRadius) && x <= (rect.right + dogRadius) &&
+                        y >= (rect.top - dogRadius) && y <= (rect.bottom + dogRadius);
+    
+    if (isColliding) {
+      // Calculate distances to each edge
+      const distToLeft = Math.abs(x - (rect.left - dogRadius));
+      const distToRight = Math.abs(x - (rect.right + dogRadius));
+      const distToTop = Math.abs(y - (rect.top - dogRadius));
+      const distToBottom = Math.abs(y - (rect.bottom + dogRadius));
+      
+      // Determine which edge(s) the dog is closest to
+      const minDistX = Math.min(distToLeft, distToRight);
+      const minDistY = Math.min(distToTop, distToBottom);
+      
+      // Rebound based on closest edge(s)
+      // If X collision is closer, rebound horizontally
+      // If Y collision is closer, rebound vertically
+      // If similar distances, rebound both
+      
+      const hitLeft = distToLeft < distToRight;
+      const hitTop = distToTop < distToBottom;
+      
+      // Always rebound from the closest edge(s)
+      if (minDistX <= minDistY || Math.abs(minDistX - minDistY) < 10) {
+        // Horizontal collision (left or right side)
+        velocityX = -velocityX * 0.8; // Reverse X velocity with damping
+        
+        // If velocity is very small, use direction based on position
+        if (Math.abs(velocityX) < 0.1) {
+          velocityX = hitLeft ? -1.5 : 1.5;
+        }
+        
+        // Push dog outside container
+        if (hitLeft) {
+          x = rect.left - dogRadius;
+        } else {
+          x = rect.right + dogRadius;
+        }
+      }
+      
+      if (minDistY <= minDistX || Math.abs(minDistX - minDistY) < 10) {
+        // Vertical collision (top or bottom)
+        velocityY = -velocityY * 0.8; // Reverse Y velocity with damping
+        
+        // If velocity is very small, use direction based on position
+        if (Math.abs(velocityY) < 0.1) {
+          velocityY = hitTop ? -1.5 : 1.5;
+        }
+        
+        // Push dog outside container
+        if (hitTop) {
+          y = rect.top - dogRadius;
+        } else {
+          y = rect.bottom + dogRadius;
+        }
+      }
+      
+      // Generate new target in rebounded direction
+      generateReboundTarget(x, y, velocityX, velocityY);
+    }
+    
+    return { x, y, rebounded: isColliding };
+  }
+  
+  // Generate a new target in the rebounded direction
+  function generateReboundTarget(currentX, currentY, vx, vy) {
+    const rect = contentContainer.getBoundingClientRect();
+    const padding = 100;
+    const dogRadius = dogOffset;
+    
+    // Normalize velocity to get direction
+    const speed = Math.sqrt(vx * vx + vy * vy);
+    if (speed > 0) {
+      const dirX = vx / speed;
+      const dirY = vy / speed;
+      
+      // Generate target in the rebounded direction
+      const distance = 200 + Math.random() * 200; // Random distance
+      targetX = currentX + dirX * distance;
+      targetY = currentY + dirY * distance;
+      
+      // Ensure target is within bounds and outside container
+      targetX = Math.max(padding, Math.min(window.innerWidth - padding, targetX));
+      targetY = Math.max(padding, Math.min(window.innerHeight - padding, targetY));
+      
+      // If target would be inside container, adjust it
+      if (targetX >= (rect.left - dogRadius) && targetX <= (rect.right + dogRadius) &&
+          targetY >= (rect.top - dogRadius) && targetY <= (rect.bottom + dogRadius)) {
+        // Push target outside container
+        if (Math.abs(targetX - rect.left) < Math.abs(targetX - rect.right)) {
+          targetX = rect.left - dogRadius - 50;
+        } else {
+          targetX = rect.right + dogRadius + 50;
+        }
+      }
+    } else {
+      // Fallback: generate random target outside container
+      generateRandomTarget();
+    }
+  }
+  
+  // Constrain dog position outside content container (fallback)
+  function constrainOutsideContainer(x, y) {
+    const rect = contentContainer.getBoundingClientRect();
+    const dogRadius = dogOffset;
+    
+    // If dog would be inside container, push it out
+    if (x >= (rect.left - dogRadius) && x <= (rect.right + dogRadius) &&
+        y >= (rect.top - dogRadius) && y <= (rect.bottom + dogRadius)) {
       // Find closest edge and push dog outside
-      const distToLeft = Math.abs(x - (rect.left - padding));
-      const distToRight = Math.abs(x - (rect.right + padding));
-      const distToTop = Math.abs(y - (rect.top - padding));
-      const distToBottom = Math.abs(y - (rect.bottom + padding));
+      const distToLeft = Math.abs(x - (rect.left - dogRadius));
+      const distToRight = Math.abs(x - (rect.right + dogRadius));
+      const distToTop = Math.abs(y - (rect.top - dogRadius));
+      const distToBottom = Math.abs(y - (rect.bottom + dogRadius));
       
       const minDist = Math.min(distToLeft, distToRight, distToTop, distToBottom);
       
       if (minDist === distToLeft) {
-        x = rect.left - padding;
+        x = rect.left - dogRadius;
       } else if (minDist === distToRight) {
-        x = rect.right + padding;
+        x = rect.right + dogRadius;
       } else if (minDist === distToTop) {
-        y = rect.top - padding;
+        y = rect.top - dogRadius;
       } else {
-        y = rect.bottom + padding;
+        y = rect.bottom + dogRadius;
       }
     }
     
     return { x, y };
   }
   
-  // Animate dog following cursor
-  function animateDog() {
-    // Calculate distance to cursor
-    const dx = mouseX - dogX;
-    const dy = mouseY - dogY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+  // Update dog position
+  function updateDogPosition() {
+    // Update original position smoothly based on scroll/container position
+    calculateOriginalPosition();
     
-    // Only move if cursor is far enough away
-    if (distance > 5) {
-      // Smooth interpolation toward cursor (3x slower)
-      const speed = Math.min(distance * 0.05, 6.67);
-      dogX += (dx / distance) * speed;
-      dogY += (dy / distance) * speed;
+    // Store previous position for velocity calculation
+    prevDogX = dogX;
+    prevDogY = dogY;
+    
+    if (isLeashed) {
+      // Smoothly return to original position (which updates with scroll)
+      targetX = originalX;
+      targetY = originalY;
+      dogX += (targetX - dogX) * 0.1;
+      dogY += (targetY - dogY) * 0.1;
+      // Reset velocity when leashed
+      velocityX = 0;
+      velocityY = 0;
+    } else {
+      // Roam randomly
+      const dx = targetX - dogX;
+      const dy = targetY - dogY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
       
-      // Constrain dog outside content box
-      const constrained = constrainOutsideBox(dogX, dogY);
-      dogX = constrained.x;
-      dogY = constrained.y;
-      
-      // Flip dog horizontally so it always faces the ball/cursor
-      // Dog faces right by default, so flip when cursor is to the left
-      if (mouseX < dogX) {
-        // Cursor is to the left - flip horizontally to face left
-        dog.style.transform = 'scaleX(-1)';
+      if (distance < 10) {
+        // Reached target, generate new one
+        generateRandomTarget();
+        // Reset velocity
+        velocityX = 0;
+        velocityY = 0;
       } else {
-        // Cursor is to the right - normal orientation (facing right)
-        dog.style.transform = 'scaleX(1)';
+        // Move toward target
+        const speed = 1.5;
+        const moveX = (dx / distance) * speed;
+        const moveY = (dy / distance) * speed;
+        dogX += moveX;
+        dogY += moveY;
+        
+        // Update velocity based on movement
+        velocityX = dogX - prevDogX;
+        velocityY = dogY - prevDogY;
       }
-      prevDogX = dogX;
       
-      dog.style.left = (dogX - 90) + 'px';
-      dog.style.top = (dogY - 90) + 'px';
+      // Check for collision and rebound
+      const collision = checkContainerCollision(dogX, dogY);
+      dogX = collision.x;
+      dogY = collision.y;
+      
+      // If rebounded, update velocity was already handled in checkContainerCollision
+      if (!collision.rebounded) {
+        // Apply some damping to velocity
+        velocityX *= 0.95;
+        velocityY *= 0.95;
+      }
     }
     
-    requestAnimationFrame(animateDog);
+    dog.style.left = (dogX - dogOffset) + 'px';
+    dog.style.top = (dogY - dogOffset) + 'px';
+    
+    // Update container position to match dog
+    dogContainer.style.left = (dogX - dogOffset) + 'px';
+    dogContainer.style.top = (dogY - dogOffset) + 'px';
   }
   
-  animateDog();
+  // Animate leash and dog orientation
+  function animate() {
+    updateDogPosition();
+    updateLeash();
+    updateDogOrientation();
+    requestAnimationFrame(animate);
+  }
+  
+  // Update on scroll/resize (smooth updates handled in animation loop)
+  window.addEventListener('scroll', () => {
+    // Scroll updates handled in animation loop
+  });
+  window.addEventListener('resize', () => {
+    calculateOriginalPosition();
+  });
+  
+  animate();
+  
+  // Export toggle function for dropdown
+  window.toggleDogLeash = toggleLeash;
+})();
+
+// Dog action buttons
+(function() {
+  const dogActionBtns = document.querySelectorAll('.dog-action-btn');
+  
+  if (!dogActionBtns.length) return;
+  
+  // Handle button actions
+  dogActionBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const action = btn.getAttribute('data-action');
+      
+      switch(action) {
+        case 'leash-toggle':
+          if (window.toggleDogLeash) {
+            window.toggleDogLeash();
+          }
+          break;
+        case 'feed':
+          // Feed action - could add animation or effect
+          console.log('Feed the dog');
+          // TODO: Add feed animation/effect
+          break;
+        case 'play':
+          // Play action - could make dog more active
+          console.log('Play with the dog');
+          // TODO: Add play animation/effect
+          break;
+      }
+    });
+  });
 })();
