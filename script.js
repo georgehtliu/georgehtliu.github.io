@@ -305,6 +305,17 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   
   initializeDog();
   
+  // Constrain position to viewport bounds
+  function constrainToViewport(x, y) {
+    const dogRadius = dogOffset;
+    
+    // Keep dog within viewport bounds
+    x = Math.max(dogRadius, Math.min(window.innerWidth - dogRadius, x));
+    y = Math.max(dogRadius, Math.min(window.innerHeight - dogRadius, y));
+    
+    return { x, y };
+  }
+  
   // Generate random target for roaming (outside content container)
   function generateRandomTarget() {
     const rect = contentContainer.getBoundingClientRect();
@@ -316,9 +327,14 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     let validPosition = false;
     
     while (!validPosition && attempts < 50) {
-      // Generate random position
-      targetX = padding + Math.random() * (window.innerWidth - padding * 2);
-      targetY = padding + Math.random() * (window.innerHeight - padding * 2);
+      // Generate random position within viewport bounds
+      targetX = dogRadius + Math.random() * (window.innerWidth - dogRadius * 2);
+      targetY = dogRadius + Math.random() * (window.innerHeight - dogRadius * 2);
+      
+      // Constrain to viewport first
+      const constrained = constrainToViewport(targetX, targetY);
+      targetX = constrained.x;
+      targetY = constrained.y;
       
       // Check if position is outside the content container (with padding for dog size)
       const isOutside = targetX < (rect.left - dogRadius) || 
@@ -334,8 +350,8 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     
     // Fallback: if we can't find a valid position, use a position to the left of container
     if (!validPosition) {
-      targetX = rect.left - dogRadius - 50;
-      targetY = window.innerHeight / 2;
+      targetX = Math.max(dogRadius, rect.left - dogRadius - 50);
+      targetY = Math.max(dogRadius, Math.min(window.innerHeight - dogRadius, window.innerHeight / 2));
     }
   }
   
@@ -470,7 +486,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   // Generate a new target in the rebounded direction
   function generateReboundTarget(currentX, currentY, vx, vy) {
     const rect = contentContainer.getBoundingClientRect();
-    const padding = 100;
     const dogRadius = dogOffset;
     
     // Normalize velocity to get direction
@@ -484,19 +499,23 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       targetX = currentX + dirX * distance;
       targetY = currentY + dirY * distance;
       
-      // Ensure target is within bounds and outside container
-      targetX = Math.max(padding, Math.min(window.innerWidth - padding, targetX));
-      targetY = Math.max(padding, Math.min(window.innerHeight - padding, targetY));
+      // Constrain to viewport bounds first
+      const viewportConstrained = constrainToViewport(targetX, targetY);
+      targetX = viewportConstrained.x;
+      targetY = viewportConstrained.y;
       
       // If target would be inside container, adjust it
       if (targetX >= (rect.left - dogRadius) && targetX <= (rect.right + dogRadius) &&
           targetY >= (rect.top - dogRadius) && targetY <= (rect.bottom + dogRadius)) {
         // Push target outside container
         if (Math.abs(targetX - rect.left) < Math.abs(targetX - rect.right)) {
-          targetX = rect.left - dogRadius - 50;
+          targetX = Math.max(dogRadius, rect.left - dogRadius - 50);
         } else {
-          targetX = rect.right + dogRadius + 50;
+          targetX = Math.min(window.innerWidth - dogRadius, rect.right + dogRadius + 50);
         }
+        // Ensure still within viewport
+        targetX = Math.max(dogRadius, Math.min(window.innerWidth - dogRadius, targetX));
+        targetY = Math.max(dogRadius, Math.min(window.innerHeight - dogRadius, targetY));
       }
     } else {
       // Fallback: generate random target outside container
@@ -582,6 +601,11 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       dogX = collision.x;
       dogY = collision.y;
       
+      // Constrain to viewport bounds
+      const viewportConstrained = constrainToViewport(dogX, dogY);
+      dogX = viewportConstrained.x;
+      dogY = viewportConstrained.y;
+      
       // If rebounded, update velocity was already handled in checkContainerCollision
       if (!collision.rebounded) {
         // Apply some damping to velocity
@@ -589,6 +613,11 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         velocityY *= 0.95;
       }
     }
+    
+    // Final viewport constraint (for leashed mode too)
+    const finalConstrained = constrainToViewport(dogX, dogY);
+    dogX = finalConstrained.x;
+    dogY = finalConstrained.y;
     
     dog.style.left = (dogX - dogOffset) + 'px';
     dog.style.top = (dogY - dogOffset) + 'px';
@@ -620,6 +649,192 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   window.toggleDogLeash = toggleLeash;
 })();
 
+// Feed functionality
+(function() {
+  let feedModeActive = false;
+  let feedModeTimeout = null;
+  let feedCursorElement = null;
+  
+  // Create visual cursor element as fallback
+  function createFeedCursor() {
+    if (feedCursorElement) return feedCursorElement;
+    
+    feedCursorElement = document.createElement('div');
+    feedCursorElement.className = 'feed-cursor';
+    feedCursorElement.style.display = 'none';
+    document.body.appendChild(feedCursorElement);
+    
+    // Track mouse movement to update cursor position
+    document.addEventListener('mousemove', (e) => {
+      if (feedModeActive && feedCursorElement) {
+        feedCursorElement.style.left = e.clientX + 'px';
+        feedCursorElement.style.top = e.clientY + 'px';
+        feedCursorElement.style.display = 'block';
+      }
+    });
+    
+    return feedCursorElement;
+  }
+  
+  // Create food particle that floats to dog
+  function createFoodParticle(x, y) {
+    const particle = document.createElement('div');
+    particle.className = 'food-particle';
+    particle.style.left = x + 'px';
+    particle.style.top = y + 'px';
+    document.body.appendChild(particle);
+    
+    // Get dog position
+    const dog = document.querySelector('.dog-img');
+    if (!dog) {
+      particle.remove();
+      return;
+    }
+    
+    const dogRect = dog.getBoundingClientRect();
+    const dogX = dogRect.left + dogRect.width / 2;
+    const dogY = dogRect.top + dogRect.height / 2;
+    
+    // Calculate distance and direction
+    const dx = dogX - x;
+    const dy = dogY - y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    // Animation parameters
+    const duration = 1500 + Math.random() * 500; // 1.5-2 seconds
+    const startTime = performance.now();
+    
+    // Space gravity effect - particles curve toward dog
+    function animate() {
+      const elapsed = performance.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function for smooth deceleration
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      
+      // Calculate position with gravity curve
+      // Add some randomness for natural movement
+      const gravityCurve = Math.sin(progress * Math.PI) * 0.3;
+      const currentX = x + dx * easeOut + (Math.random() - 0.5) * 20 * (1 - progress);
+      const currentY = y + dy * easeOut + gravityCurve * distance * 0.2;
+      
+      // Scale down as it approaches dog
+      const scale = 1 - progress * 0.5;
+      const opacity = 1 - progress;
+      
+      particle.style.left = currentX + 'px';
+      particle.style.top = currentY + 'px';
+      particle.style.transform = `scale(${scale})`;
+      particle.style.opacity = opacity;
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        particle.remove();
+      }
+    }
+    
+    requestAnimationFrame(animate);
+  }
+  
+  // Handle feed mode click
+  function handleFeedClick(e) {
+    if (!feedModeActive) return;
+    
+    // Create multiple food particles for effect
+    const particleCount = 3 + Math.floor(Math.random() * 3); // 3-5 particles
+    for (let i = 0; i < particleCount; i++) {
+      setTimeout(() => {
+        const offsetX = (Math.random() - 0.5) * 20;
+        const offsetY = (Math.random() - 0.5) * 20;
+        createFoodParticle(e.clientX + offsetX, e.clientY + offsetY);
+      }, i * 50);
+    }
+  }
+  
+  // Activate feed mode
+  function activateFeedMode() {
+    if (feedModeActive) return; // Already active
+    
+    feedModeActive = true;
+    document.body.classList.add('feed-mode');
+    
+    // Try to set cursor image (browsers may limit size to 32x32 or 128x128)
+    // If it doesn't work, the visual cursor fallback will show
+    try {
+      document.body.style.cursor = 'url("dog-treats.png") 120 120, pointer';
+    } catch (e) {
+      console.log('Cursor image may not be supported, using visual fallback');
+    }
+    
+    // Create and show visual cursor fallback (always show as backup)
+    const cursorEl = createFeedCursor();
+    cursorEl.style.display = 'block';
+    
+    // Show and animate timer inside feed button
+    const timerFillEl = document.getElementById('feed-timer-fill');
+    if (timerFillEl) {
+      timerFillEl.style.width = '100%';
+      
+      // Animate timer fill from 100% to 0% over 10 seconds
+      const duration = 10000; // 10 seconds
+      const startTime = performance.now();
+      
+      function updateTimer() {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const remaining = 100 - (progress * 100);
+        
+        timerFillEl.style.width = remaining + '%';
+        
+        if (progress < 1) {
+          requestAnimationFrame(updateTimer);
+        } else {
+          timerFillEl.style.width = '0%';
+        }
+      }
+      
+      requestAnimationFrame(updateTimer);
+    }
+    
+    // Add click listener for food particles
+    document.addEventListener('click', handleFeedClick, true);
+    
+    // Deactivate after 10 seconds
+    feedModeTimeout = setTimeout(() => {
+      deactivateFeedMode();
+    }, 10000);
+  }
+  
+  // Deactivate feed mode
+  function deactivateFeedMode() {
+    feedModeActive = false;
+    document.body.classList.remove('feed-mode');
+    document.body.style.cursor = ''; // Reset cursor style
+    
+    // Hide visual cursor
+    if (feedCursorElement) {
+      feedCursorElement.style.display = 'none';
+    }
+    
+    // Reset timer
+    const timerFillEl = document.getElementById('feed-timer-fill');
+    if (timerFillEl) {
+      timerFillEl.style.width = '0%';
+    }
+    
+    document.removeEventListener('click', handleFeedClick, true);
+    
+    if (feedModeTimeout) {
+      clearTimeout(feedModeTimeout);
+      feedModeTimeout = null;
+    }
+  }
+  
+  // Export for use in button handler
+  window.activateFeedMode = activateFeedMode;
+})();
+
 // Dog action buttons
 (function() {
   const dogActionBtns = document.querySelectorAll('.dog-action-btn');
@@ -639,9 +854,9 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
           }
           break;
         case 'feed':
-          // Feed action - could add animation or effect
-          console.log('Feed the dog');
-          // TODO: Add feed animation/effect
+          if (window.activateFeedMode) {
+            window.activateFeedMode();
+          }
           break;
         case 'play':
           // Play action - could make dog more active
