@@ -208,6 +208,92 @@ body.zoomies-mode::before {
   animation-timing-function: linear;
 }
 
+/* Shooting Stars */
+.shooting-star {
+  position: absolute;
+  width: 2px;
+  height: 100px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(139, 92, 246, 0.6) 100%
+  );
+  border-radius: 50%;
+  box-shadow: 
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(139, 92, 246, 0.6),
+    0 0 30px rgba(107, 70, 193, 0.4);
+  transform-origin: top center;
+  transform: translate(-50%, -50%) rotate(var(--angle, 0deg));
+  animation: shooting-star-move 2s linear forwards;
+  opacity: 0;
+}
+
+@keyframes shooting-star-move {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(calc(var(--start-x, 0%) - 50%), calc(var(--start-y, 0%) - 50%)) rotate(var(--angle, 0deg)) scale(0.5);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(calc(var(--end-x, 100%) - 50%), calc(var(--end-y, 100%) - 50%)) rotate(var(--angle, 0deg)) scale(1.2);
+  }
+}
+
+/* Nebula Clouds */
+.nebula {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: nebula-drift 200s linear infinite;
+  pointer-events: none;
+  opacity: 0.1;
+}
+
+@keyframes nebula-drift {
+  0% {
+    transform: translate(-50%, -50%) translateX(100vw) scale(1);
+    opacity: 0.05;
+  }
+  25% {
+    opacity: 0.12;
+  }
+  50% {
+    transform: translate(-50%, -50%) translateX(0vw) scale(1.1);
+    opacity: 0.15;
+  }
+  75% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: translate(-50%, -50%) translateX(-100vw) scale(1);
+    opacity: 0.05;
+  }
+}
+
+/* Asteroids */
+.asteroid {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  animation: asteroid-drift 140s linear infinite;
+}
+
+@keyframes asteroid-drift {
+  0% {
+    transform: translate(-50%, -50%) translateX(100vw) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) translateX(-100vw) rotate(360deg);
+  }
+}
+
 @keyframes drift-left {
   0% {
     transform: translate(-50%, -50%) translateX(100vw);
@@ -217,9 +303,176 @@ body.zoomies-mode::before {
   }
 }
 
+/* Comets */
+.comet {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  animation: comet-drift 100s linear infinite;
+}
+
+@keyframes comet-drift {
+  0% {
+    transform: translate(-50%, -50%) translateX(100vw) rotate(0deg);
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) translateX(-100vw) rotate(360deg);
+    opacity: 0.4;
+  }
+}
+
+/* Space Dust */
+.space-dust {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  animation: dust-drift 160s linear infinite, dust-twinkle 3s ease-in-out infinite;
+}
+
+@keyframes dust-drift {
+  0% {
+    transform: translate(-50%, -50%) translateX(100vw);
+  }
+  100% {
+    transform: translate(-50%, -50%) translateX(-100vw);
+  }
+}
+
+@keyframes dust-twinkle {
+  0%, 100% {
+    opacity: 0.2;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+}
+
+/* Constellations */
+.constellation {
+  position: absolute;
+  transform: translate(-50%, -50%) rotate(var(--angle, 0deg));
+  animation: constellation-drift 180s linear infinite;
+}
+
+@keyframes constellation-drift {
+  0% {
+    transform: translate(-50%, -50%) translateX(100vw) rotate(var(--angle, 0deg));
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translate(-50%, -50%) translateX(-100vw) rotate(var(--angle, 0deg));
+    opacity: 0.1;
+  }
+}
+
+/* Black Holes */
+.black-hole {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  animation: blackhole-drift 220s linear infinite, blackhole-pulse 8s ease-in-out infinite;
+}
+
+@keyframes blackhole-drift {
+  0% {
+    transform: translate(-50%, -50%) translateX(100vw) scale(1);
+  }
+  100% {
+    transform: translate(-50%, -50%) translateX(-100vw) scale(1);
+  }
+}
+
+@keyframes blackhole-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 30px rgba(76, 29, 149, 0.3),
+      inset 0 0 15px rgba(0, 0, 0, 0.9);
+    opacity: 0.6;
+  }
+  50% {
+    box-shadow: 
+      0 0 50px rgba(76, 29, 149, 0.5),
+      inset 0 0 20px rgba(0, 0, 0, 0.95);
+    opacity: 0.8;
+  }
+}
+
+/* Pulsars */
+.pulsar {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  animation: pulsar-drift 130s linear infinite, pulsar-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulsar-drift {
+  0% {
+    transform: translate(-50%, -50%) translateX(100vw);
+  }
+  100% {
+    transform: translate(-50%, -50%) translateX(-100vw);
+  }
+}
+
+@keyframes pulsar-pulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 0 9px rgba(139, 92, 246, 0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.5);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 1);
+  }
+}
+
+/* Solar Flares */
+.solar-flare {
+  position: absolute;
+  transform: translate(-50%, -50%) rotate(var(--angle, 0deg));
+  animation: solar-flare-appear 1.5s ease-out forwards;
+}
+
+@keyframes solar-flare-appear {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) scale(1.5) translateY(-20px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .star {
+  .star,
+  .planet,
+  .spaceship,
+  .asteroid,
+  .nebula,
+  .comet,
+  .space-dust,
+  .constellation,
+  .black-hole,
+  .pulsar {
     animation: none;
+  }
+  
+  .shooting-star,
+  .solar-flare {
+    display: none;
   }
 }
 
@@ -394,6 +647,34 @@ body.zoomies-mode::before {
   letter-spacing: 0.05em;
   line-height: 1.1;
   text-transform: lowercase;
+  position: relative;
+  
+  /* Subtle space-themed aura - very subtle glow */
+  text-shadow: 
+    0 0 8px rgba(139, 92, 246, 0.25),
+    0 0 16px rgba(107, 70, 193, 0.15),
+    0 0 24px rgba(76, 29, 149, 0.1),
+    0 0 2px rgba(139, 92, 246, 0.3);
+  
+  /* Very subtle pulsing animation */
+  animation: spaceAura 6s ease-in-out infinite;
+}
+
+@keyframes spaceAura {
+  0%, 100% {
+    text-shadow: 
+      0 0 8px rgba(139, 92, 246, 0.25),
+      0 0 16px rgba(107, 70, 193, 0.15),
+      0 0 24px rgba(76, 29, 149, 0.1),
+      0 0 2px rgba(139, 92, 246, 0.3);
+  }
+  50% {
+    text-shadow: 
+      0 0 10px rgba(139, 92, 246, 0.3),
+      0 0 20px rgba(107, 70, 193, 0.18),
+      0 0 30px rgba(76, 29, 149, 0.12),
+      0 0 2px rgba(139, 92, 246, 0.35);
+  }
 }
 
 .typewriter-cursor {
@@ -405,6 +686,13 @@ body.zoomies-mode::before {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .name-text {
+    animation: none;
+    text-shadow: 
+      0 0 8px rgba(139, 92, 246, 0.25),
+      0 0 2px rgba(107, 70, 193, 0.3);
+  }
+  
   .typewriter-cursor {
     animation: none;
   }

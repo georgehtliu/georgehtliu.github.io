@@ -304,6 +304,320 @@
     
     starsContainer.appendChild(spaceship);
   }
+  
+  // Generate shooting stars
+  function createShootingStar() {
+    const shootingStar = document.createElement('div');
+    shootingStar.className = 'shooting-star';
+    
+    // Random starting position (from top or sides)
+    const startSide = Math.floor(Math.random() * 3); // 0=top, 1=left, 2=right
+    let startX, startY, endX, endY;
+    
+    if (startSide === 0) {
+      // Start from top
+      startX = Math.random() * 100;
+      startY = 0;
+      endX = startX + (Math.random() * 40 - 20);
+      endY = 100;
+    } else if (startSide === 1) {
+      // Start from left
+      startX = 0;
+      startY = Math.random() * 50;
+      endX = 100;
+      endY = startY + (Math.random() * 30 + 20);
+    } else {
+      // Start from right
+      startX = 100;
+      startY = Math.random() * 50;
+      endX = 0;
+      endY = startY + (Math.random() * 30 + 20);
+    }
+    
+    shootingStar.style.left = startX + '%';
+    shootingStar.style.top = startY + '%';
+    
+    // Calculate angle for the streak
+    const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+    shootingStar.style.setProperty('--angle', angle + 'deg');
+    shootingStar.style.setProperty('--start-x', startX + '%');
+    shootingStar.style.setProperty('--start-y', startY + '%');
+    shootingStar.style.setProperty('--end-x', endX + '%');
+    shootingStar.style.setProperty('--end-y', endY + '%');
+    
+    // Random delay before appearing
+    const delay = Math.random() * 5;
+    shootingStar.style.animationDelay = delay + 's';
+    
+    starsContainer.appendChild(shootingStar);
+    
+    // Remove after animation completes
+    setTimeout(() => {
+      if (shootingStar.parentNode) {
+        shootingStar.remove();
+      }
+    }, (delay + 2) * 1000);
+  }
+  
+  // Create shooting stars periodically
+  function startShootingStars() {
+    // Create initial shooting stars
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => createShootingStar(), i * 2000);
+    }
+    
+    // Continue creating shooting stars every 4-8 seconds
+    setInterval(() => {
+      if (Math.random() > 0.3) { // 70% chance to create a shooting star
+        createShootingStar();
+      }
+    }, 4000 + Math.random() * 4000);
+  }
+  
+  startShootingStars();
+  
+  // Generate nebula clouds
+  const nebulaCount = 3;
+  for (let i = 0; i < nebulaCount; i++) {
+    const nebula = document.createElement('div');
+    nebula.className = 'nebula';
+    
+    const size = Math.random() * 300 + 200; // 200-500px
+    const x = Math.random() * 120 - 10; // -10% to 110%
+    const y = Math.random() * 100;
+    
+    nebula.style.width = size + 'px';
+    nebula.style.height = size + 'px';
+    nebula.style.left = x + '%';
+    nebula.style.top = y + '%';
+    nebula.style.opacity = Math.random() * 0.15 + 0.05; // Very subtle
+    
+    // Random nebula color
+    const nebulaColors = [
+      'rgba(139, 92, 246, 0.3)', // Purple
+      'rgba(107, 70, 193, 0.25)', // Dark purple
+      'rgba(59, 130, 246, 0.2)', // Blue
+      'rgba(76, 29, 149, 0.25)', // Deep purple
+    ];
+    const colorIndex = Math.floor(Math.random() * nebulaColors.length);
+    nebula.style.background = `radial-gradient(circle, ${nebulaColors[colorIndex]} 0%, transparent 70%)`;
+    
+    const baseDelay = Math.random() * 60;
+    nebula.style.animationDelay = `-${baseDelay}s`;
+    
+    starsContainer.appendChild(nebula);
+  }
+  
+  // Generate asteroids/comets
+  const asteroidCount = 4;
+  for (let i = 0; i < asteroidCount; i++) {
+    const asteroid = document.createElement('div');
+    asteroid.className = 'asteroid';
+    
+    const size = Math.random() * 15 + 10; // 10-25px
+    const x = Math.random() * 200 - 50;
+    const y = Math.random() * 100;
+    
+    asteroid.style.width = size + 'px';
+    asteroid.style.height = size + 'px';
+    asteroid.style.left = x + '%';
+    asteroid.style.top = y + '%';
+    asteroid.style.opacity = Math.random() * 0.4 + 0.3;
+    asteroid.style.borderRadius = '30% 70% 70% 30% / 30% 30% 70% 70%'; // Irregular shape
+    asteroid.style.background = `radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(76, 29, 149, 0.4) 100%)`;
+    asteroid.style.boxShadow = `0 0 ${size / 2}px rgba(139, 92, 246, 0.5)`;
+    
+    const baseDelay = x < 50 ? Math.random() * 30 : Math.random() * 60;
+    asteroid.style.animationDelay = `-${baseDelay}s`;
+    
+    starsContainer.appendChild(asteroid);
+  }
+  
+  // Generate comets with tails
+  const cometCount = 2;
+  for (let i = 0; i < cometCount; i++) {
+    const comet = document.createElement('div');
+    comet.className = 'comet';
+    
+    const size = Math.random() * 8 + 6; // 6-14px
+    const x = Math.random() * 200 - 50;
+    const y = Math.random() * 100;
+    
+    comet.style.width = size + 'px';
+    comet.style.height = size + 'px';
+    comet.style.left = x + '%';
+    comet.style.top = y + '%';
+    comet.style.opacity = Math.random() * 0.5 + 0.4;
+    comet.style.background = `radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(139, 92, 246, 0.6) 50%, transparent 100%)`;
+    comet.style.borderRadius = '50%';
+    comet.style.boxShadow = `0 0 ${size * 2}px rgba(139, 92, 246, 0.8)`;
+    
+    const baseDelay = x < 50 ? Math.random() * 30 : Math.random() * 60;
+    comet.style.animationDelay = `-${baseDelay}s`;
+    
+    starsContainer.appendChild(comet);
+  }
+  
+  // Generate space dust particles (small twinkling particles)
+  const dustCount = 30;
+  for (let i = 0; i < dustCount; i++) {
+    const dust = document.createElement('div');
+    dust.className = 'space-dust';
+    
+    const size = Math.random() * 3 + 1; // 1-4px
+    const x = Math.random() * 200 - 50;
+    const y = Math.random() * 100;
+    
+    dust.style.width = size + 'px';
+    dust.style.height = size + 'px';
+    dust.style.left = x + '%';
+    dust.style.top = y + '%';
+    dust.style.opacity = Math.random() * 0.6 + 0.2;
+    dust.style.background = `radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(139, 92, 246, 0.5) 100%)`;
+    dust.style.borderRadius = '50%';
+    dust.style.boxShadow = `0 0 ${size * 1.5}px rgba(139, 92, 246, 0.6)`;
+    
+    const baseDelay = x < 50 ? Math.random() * 30 : Math.random() * 60;
+    const twinkleDelay = Math.random() * 3;
+    dust.style.animationDelay = `-${baseDelay}s`;
+    dust.style.setProperty('--twinkle-delay', twinkleDelay + 's');
+    
+    starsContainer.appendChild(dust);
+  }
+  
+  // Generate constellation lines (connecting stars)
+  const constellationCount = 2;
+  for (let i = 0; i < constellationCount; i++) {
+    const constellation = document.createElement('div');
+    constellation.className = 'constellation';
+    
+    const x1 = Math.random() * 200 - 50;
+    const y1 = Math.random() * 100;
+    const x2 = x1 + (Math.random() * 40 - 20);
+    const y2 = y1 + (Math.random() * 30 - 15);
+    
+    const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+    const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+    
+    constellation.style.width = length + '%';
+    constellation.style.height = '1px';
+    constellation.style.left = x1 + '%';
+    constellation.style.top = y1 + '%';
+    constellation.style.opacity = Math.random() * 0.2 + 0.1;
+    constellation.style.background = `linear-gradient(90deg, rgba(139, 92, 246, 0.3) 0%, rgba(107, 70, 193, 0.2) 50%, transparent 100%)`;
+    constellation.style.transformOrigin = 'left center';
+    constellation.style.setProperty('--angle', angle + 'deg');
+    
+    const baseDelay = x1 < 50 ? Math.random() * 30 : Math.random() * 60;
+    constellation.style.animationDelay = `-${baseDelay}s`;
+    
+    starsContainer.appendChild(constellation);
+  }
+  
+  // Generate black holes (dark circles with accretion disk effect)
+  const blackHoleCount = 1;
+  for (let i = 0; i < blackHoleCount; i++) {
+    const blackHole = document.createElement('div');
+    blackHole.className = 'black-hole';
+    
+    const size = Math.random() * 40 + 30; // 30-70px
+    const x = Math.random() * 200 - 50;
+    const y = Math.random() * 100;
+    
+    blackHole.style.width = size + 'px';
+    blackHole.style.height = size + 'px';
+    blackHole.style.left = x + '%';
+    blackHole.style.top = y + '%';
+    blackHole.style.background = `radial-gradient(circle, 
+      rgba(0, 0, 0, 0.8) 0%, 
+      rgba(76, 29, 149, 0.4) 40%, 
+      rgba(139, 92, 246, 0.2) 60%, 
+      transparent 100%)`;
+    blackHole.style.borderRadius = '50%';
+    blackHole.style.boxShadow = `
+      0 0 ${size}px rgba(76, 29, 149, 0.3),
+      inset 0 0 ${size / 2}px rgba(0, 0, 0, 0.9)`;
+    
+    const baseDelay = x < 50 ? Math.random() * 30 : Math.random() * 60;
+    blackHole.style.animationDelay = `-${baseDelay}s`;
+    
+    starsContainer.appendChild(blackHole);
+  }
+  
+  // Generate pulsars (pulsing stars)
+  const pulsarCount = 3;
+  for (let i = 0; i < pulsarCount; i++) {
+    const pulsar = document.createElement('div');
+    pulsar.className = 'pulsar';
+    
+    const size = Math.random() * 4 + 3; // 3-7px
+    const x = Math.random() * 200 - 50;
+    const y = Math.random() * 100;
+    
+    pulsar.style.width = size + 'px';
+    pulsar.style.height = size + 'px';
+    pulsar.style.left = x + '%';
+    pulsar.style.top = y + '%';
+    pulsar.style.background = `radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(139, 92, 246, 0.8) 100%)`;
+    pulsar.style.borderRadius = '50%';
+    pulsar.style.boxShadow = `0 0 ${size * 3}px rgba(139, 92, 246, 0.6)`;
+    
+    const pulseDelay = Math.random() * 2;
+    pulsar.style.setProperty('--pulse-delay', pulseDelay + 's');
+    
+    starsContainer.appendChild(pulsar);
+  }
+  
+  // Generate solar flares (bright streaks)
+  function createSolarFlare() {
+    const flare = document.createElement('div');
+    flare.className = 'solar-flare';
+    
+    const x = Math.random() * 200 - 50;
+    const y = Math.random() * 100;
+    const angle = Math.random() * 360;
+    const length = Math.random() * 60 + 40; // 40-100px
+    
+    flare.style.width = '2px';
+    flare.style.height = length + 'px';
+    flare.style.left = x + '%';
+    flare.style.top = y + '%';
+    flare.style.background = `linear-gradient(to bottom, 
+      rgba(255, 255, 255, 0.9) 0%, 
+      rgba(255, 200, 100, 0.7) 30%, 
+      rgba(139, 92, 246, 0.5) 60%, 
+      transparent 100%)`;
+    flare.style.transformOrigin = 'center top';
+    flare.style.setProperty('--angle', angle + 'deg');
+    flare.style.opacity = Math.random() * 0.4 + 0.3;
+    flare.style.boxShadow = `0 0 ${length / 2}px rgba(255, 200, 100, 0.6)`;
+    
+    const delay = Math.random() * 3;
+    flare.style.animationDelay = delay + 's';
+    
+    starsContainer.appendChild(flare);
+    
+    setTimeout(() => {
+      if (flare.parentNode) {
+        flare.remove();
+      }
+    }, (delay + 1.5) * 1000);
+  }
+  
+  // Create solar flares periodically
+  function startSolarFlares() {
+    for (let i = 0; i < 2; i++) {
+      setTimeout(() => createSolarFlare(), i * 3000);
+    }
+    
+    setInterval(() => {
+      if (Math.random() > 0.5) {
+        createSolarFlare();
+      }
+    }, 5000 + Math.random() * 5000);
+  }
+  
+  startSolarFlares();
 })();
 
 // Typewriter Effect
