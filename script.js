@@ -1166,6 +1166,9 @@
   
   // Force immediate positioning on load
   window.addEventListener('load', () => {
+    // Update button visibility on load
+    updateActionButtonsVisibility();
+    
     const dogRadius = dogOffset;
     if (isLeashed) {
       // Leashed: center vertically
@@ -1300,6 +1303,24 @@
     }
   }
   
+  // Update visibility of action buttons based on leash state
+  function updateActionButtonsVisibility() {
+    const feedBtn = document.getElementById('feed-btn');
+    const playBtn = document.getElementById('play-btn');
+    const zoomiesBtn = document.getElementById('zoomies-btn');
+    
+    // Show buttons only when unleashed
+    if (feedBtn) {
+      feedBtn.style.display = isLeashed ? 'none' : 'block';
+    }
+    if (playBtn) {
+      playBtn.style.display = isLeashed ? 'none' : 'block';
+    }
+    if (zoomiesBtn) {
+      zoomiesBtn.style.display = isLeashed ? 'none' : 'block';
+    }
+  }
+  
   // Update energy bar visual
   function updateEnergyBar() {
     if (!energyBarFill) return;
@@ -1337,6 +1358,7 @@
         if (!isLeashed) {
           isLeashed = true;
           updateLeashButtonText();
+          updateActionButtonsVisibility();
           calculateOriginalPosition();
           targetX = originalX;
           const dogRadius = dogOffset;
@@ -1371,6 +1393,7 @@
         if (!isLeashed) {
           isLeashed = true;
           updateLeashButtonText();
+          updateActionButtonsVisibility();
           calculateOriginalPosition();
           targetX = originalX;
           const dogRadius = dogOffset;
@@ -1389,6 +1412,7 @@
         if (!isLeashed) {
           isLeashed = true;
           updateLeashButtonText();
+          updateActionButtonsVisibility();
           calculateOriginalPosition();
           targetX = originalX;
           const dogRadius = dogOffset;
@@ -1439,6 +1463,9 @@
     
     // Update button text to show current state
     updateLeashButtonText();
+    
+    // Update visibility of action buttons
+    updateActionButtonsVisibility();
     
     // Remove any bone if play mode was active
     if (window.removeBone) {
