@@ -3007,3 +3007,64 @@
   // Add click event listener
   effectsToggleBtn.addEventListener('click', toggleEffects);
 })();
+
+// Timeline Scroll Arrow
+(function() {
+  const scrollArrow = document.getElementById('timeline-scroll-arrow');
+  const timeline = document.querySelector('.timeline');
+  
+  if (!scrollArrow || !timeline) return;
+  
+  function checkScrollPosition() {
+    const timelineRect = timeline.getBoundingClientRect();
+    const timelineTop = timelineRect.top;
+    const timelineBottom = timelineRect.bottom;
+    const viewportHeight = window.innerHeight;
+    
+    // Check if timeline extends beyond viewport
+    const isTimelineLong = timeline.scrollHeight > viewportHeight;
+    
+    // Check if there's more content below the visible area
+    const hasMoreContentBelow = timelineBottom > viewportHeight - 100; // 100px threshold
+    
+    // Show arrow if timeline is long and there's more content to scroll
+    if (isTimelineLong && hasMoreContentBelow && timelineTop < viewportHeight) {
+      scrollArrow.classList.add('visible');
+    } else {
+      scrollArrow.classList.remove('visible');
+    }
+  }
+  
+  function scrollToNext() {
+    const timelineRect = timeline.getBoundingClientRect();
+    const currentScroll = window.scrollY;
+    const viewportHeight = window.innerHeight;
+    
+    // Calculate scroll position to show next section
+    const scrollAmount = viewportHeight * 0.8; // Scroll 80% of viewport
+    const targetScroll = currentScroll + scrollAmount;
+    
+    window.scrollTo({
+      top: targetScroll,
+      behavior: 'smooth'
+    });
+  }
+  
+  // Add click handler
+  scrollArrow.addEventListener('click', scrollToNext);
+  
+  // Check on scroll and resize
+  let scrollTimeout;
+  window.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(checkScrollPosition, 100);
+  });
+  
+  window.addEventListener('resize', checkScrollPosition);
+  
+  // Initial check
+  checkScrollPosition();
+  
+  // Check periodically in case content loads dynamically
+  setInterval(checkScrollPosition, 1000);
+})();

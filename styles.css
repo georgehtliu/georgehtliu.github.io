@@ -1416,6 +1416,62 @@ body.play-mode select {
   }
 }
 
+/* Timeline Scroll Arrow */
+.timeline-scroll-arrow {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 50%;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.timeline-scroll-arrow.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.timeline-scroll-arrow:hover,
+.timeline-scroll-arrow:focus {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 12px rgba(255, 107, 53, 0.3);
+  transform: translateX(-50%) translateY(-4px);
+  outline: none;
+}
+
+.timeline-scroll-arrow svg {
+  display: block;
+  animation: scrollArrowBounce 2s ease-in-out infinite;
+}
+
+@keyframes scrollArrowBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+.timeline-scroll-arrow:hover svg,
+.timeline-scroll-arrow:focus svg {
+  animation: scrollArrowBounce 1s ease-in-out infinite;
+}
+
 /* Footer */
 .footer {
   max-width: clamp(42rem, 80vw, 64rem);
